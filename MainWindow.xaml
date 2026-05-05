@@ -1,0 +1,53 @@
+﻿<Window x:Class="WPF_Test.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPF_Test"
+        xmlns:userControls="clr-namespace:WPF_Test.Vista.UserControls"
+        mc:Ignorable="d"
+        Title="GIDAD Testing" Height="450" Width="800">
+
+    <Window.Resources>
+        <Style x:Key="ButtonStyle" TargetType="StackPanel">
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="25*" />
+            <ColumnDefinition Width="75*" />
+        </Grid.ColumnDefinitions>
+
+        <Label FontWeight="Bold">TESTING TITLE</Label>
+        <ListBox Grid.Row="1" Grid.Column="1" x:Name="lastNames" />
+
+        <!--
+        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,0">
+            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
+            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
+            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
+            <userControls:TestingBlock PlaceholderText="VARIOS"/>
+        </StackPanel>
+
+        <Do Grid.Row="2" Grid.Column="0" Margin="0,0,0,0">
+            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
+            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
+            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
+            <userControls:TestingBlock PlaceholderText="VARIOS"/>
+        </DockPanel>
+        -->
+        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1">
+            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
+            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
+            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
+            <userControls:TestingBlock PlaceholderText="VARIOS"/>
+        </UniformGrid>
+    </Grid>
+</Window>
