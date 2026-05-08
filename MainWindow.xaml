@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_Test"
         xmlns:userControls="clr-namespace:WPF_Test.Vista.UserControls"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="GIDAD Testing" Height="450" Width="800">
+        Title="GIDAD Testing" Height="500" Width="924">
 
     <Window.Resources>
         <Style x:Key="ButtonStyle" TargetType="StackPanel">
         </Style>
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -25,29 +26,24 @@
             <ColumnDefinition Width="75*" />
         </Grid.ColumnDefinitions>
 
-        <Label FontWeight="Bold">TESTING TITLE</Label>
-        <ListBox Grid.Row="1" Grid.Column="1" x:Name="lastNames" />
+        <Label FontWeight="Bold">GIDAD LOGO GOES HERE</Label>
 
-        <!--
-        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,0">
-            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
-            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
-            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
-            <userControls:TestingBlock PlaceholderText="VARIOS"/>
-        </StackPanel>
-
-        <Do Grid.Row="2" Grid.Column="0" Margin="0,0,0,0">
-            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
-            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
-            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
-            <userControls:TestingBlock PlaceholderText="VARIOS"/>
-        </DockPanel>
-        -->
-        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1">
-            <userControls:TestingBlock PlaceholderText="ORDENES DE TRABAJO"/>
-            <userControls:TestingBlock PlaceholderText="VENTAS POR MOSTRADOR"/>
-            <userControls:TestingBlock PlaceholderText="PROVEEDORES"/>
-            <userControls:TestingBlock PlaceholderText="VARIOS"/>
+        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1" HorizontalAlignment="Center" Width="241">
+            <userControls:TestingBlock ContentText="ORDENES DE TRABAJO"/>
+            <userControls:TestingBlock ContentText="VENTAS POR MOSTRADOR"/>
+            <userControls:TestingBlock ContentText="PROVEEDORES"/>
+            <userControls:TestingBlock ContentText="VARIOS"/>
         </UniformGrid>
+
+        <userControls:DynamicDataGrid Grid.Row="1" Grid.Column="1" Margin="0,0,1,80" TriggerColumn="NroOrden" Loaded="DynamicDataGrid_Loaded">
+            <userControls:DynamicDataGrid.ColumnHeaders>
+                <system:String>N° DE ORDEN</system:String>
+                <system:String>EFECTIVO</system:String>
+                <system:String>SEÑA</system:String>
+                <system:String>TARJETA</system:String>
+                <system:String>TRANSFERENCIA</system:String>
+            </userControls:DynamicDataGrid.ColumnHeaders>
+        </userControls:DynamicDataGrid>
+
     </Grid>
 </Window>

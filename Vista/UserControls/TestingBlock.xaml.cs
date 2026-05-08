@@ -12,14 +12,14 @@ namespace WPF_Test.Vista.UserControls
             InitializeComponent();
         }
 
-        private string placeholderText;
-        public string PlaceholderText
+        private string contentText;
+        public string ContentText
         {
-            get { return placeholderText; }
+            get { return contentText; }
             set 
             {
-                placeholderText = value;
-                btn.Content = placeholderText;
+                contentText = value;
+                btn.Content = contentText;
             }
         }
 

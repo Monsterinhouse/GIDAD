@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\Lucas\Desktop\VS-Repo\obj\Debug\net9.0-windows\
+D:\GIDAD\obj\Debug\net9.0-windows\
 WPF_Test
 none
 false
 TRACE;DEBUG;NET;NET9_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
-C:\Users\Lucas\Desktop\VS-Repo\App.xaml
-21613093596
+D:\GIDAD\App.xaml
+3449847649
 
-7-1139789421
-200-1531957912
-MainWindow.xaml;Vista\UserControls\TestingBlock.xaml;
+9-12667915
+200754226803
+MainWindow.xaml;Vista\UserControls\DynamicDataGrid.xaml;Vista\UserControls\TestingBlock.xaml;
 
-False
+True
 

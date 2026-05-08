@@ -7,6 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
     <Grid>
-        <Button x:Name="btn" Content="{Binding PlaceholderText}" BorderThickness="0" Background="Transparent"/>
+        <Button x:Name="btn" Content="{Binding ContentText}" BorderThickness="0" Background="Transparent"/>
     </Grid>
 </UserControl>
