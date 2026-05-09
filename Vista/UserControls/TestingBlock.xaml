@@ -7,6 +7,33 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="400">
     <Grid>
-        <Button x:Name="btn" Content="{Binding ContentText}" BorderThickness="0" Background="Transparent"/>
+        <Button x:Name="btn" 
+                MouseEnter="btn_MouseEnter"
+                MouseLeave="btn_MouseLeave"
+                PreviewMouseDown="btn_MouseDown"
+                PreviewMouseUp="btn_MouseUp">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" BorderBrush="Gray" BorderThickness="0,0,0,0.5" Margin="0.5,0,0.5,0">
+                        <Border.Background>
+                            <SolidColorBrush x:Name="borderColor" Color="Transparent"/>
+                        </Border.Background>
+                        <TextBlock x:Name="text"
+                               Text="{Binding ContentText}"
+                               FontFamily="Instagram Sans"
+                               FontWeight="DemiBold"
+                               FontSize="16"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush x:Name="textColor"/>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
     </Grid>
 </UserControl>

@@ -17,12 +17,12 @@
               >
         <DataGrid.Resources>
             <Style TargetType="{x:Type DataGridColumnHeader}">
-                <Setter Property="Background" Value="#FF7FDDEF"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="BorderThickness" Value="0,0,1.5,1.5"/>
                 <Setter Property="BorderBrush" Value="Black"/>
                 <Setter Property="FontStyle" Value="Italic"/>
                 <Setter Property="FontFamily" Value="Instagram Sans"/>
+                <Setter Property="FontSize" Value="14"/>
             </Style>
         </DataGrid.Resources>
     </DataGrid>

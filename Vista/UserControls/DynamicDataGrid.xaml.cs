@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.DirectoryServices;
 using System.Windows;
 using System.Windows.Controls;
 using WPF_Test.Models;
@@ -102,13 +103,47 @@ namespace WPF_Test.Vista.UserControls
             if (e.PropertyName != TriggerColumn) return;
 
             var changedRow = (OrdenRow)sender;
+            int index = Rows.IndexOf(changedRow);
 
-            // Solo actúa si es la última fila y tiene valor
-            if (Rows.IndexOf(changedRow) == Rows.Count - 1 &&
-                !string.IsNullOrWhiteSpace(changedRow.NroOrden))
+            if (!string.IsNullOrWhiteSpace(changedRow.NroOrden))
             {
-                AddNewRow();
+                // Si es la última fila y tiene valor → agregar nueva
+                if (index == Rows.Count - 1)
+                    AddNewRow();
+            }
+            else
+            {
+                // Si el campo trigger se vació, eliminar filas vacías sobrantes
+                // (excepto la primera o cualquiera que no sea la última)
+                RemoveTrailingEmptyRows();
             }
         }
+
+        private void RemoveTrailingEmptyRows()
+        {
+            // Recorre desde el final hacia atrás, eliminando filas vacías
+            // pero siempre dejando al menos una fila
+            for (int i = Rows.Count - 1; i >= 1; i--)
+            {
+                if (IsRowEmpty(Rows[i]))
+                {
+                    Rows[i].PropertyChanged -= Row_PropertyChanged;
+                    Rows.RemoveAt(i);
+                }
+                else
+                {
+                    break; // Encuentra una fila con datos, se detiene
+                }
+            }
+        }
+
+        private bool IsRowEmpty(OrdenRow row)
+        {
+            return string.IsNullOrWhiteSpace(row.NroOrden)
+                && string.IsNullOrWhiteSpace(row.Efectivo)
+                && string.IsNullOrWhiteSpace(row.Seña)
+                && string.IsNullOrWhiteSpace(row.Tarjeta)
+                && string.IsNullOrWhiteSpace(row.Transferencia);
+        }
     }
-}
+    }

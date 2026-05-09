@@ -7,7 +7,7 @@
         xmlns:userControls="clr-namespace:WPF_Test.Vista.UserControls"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="GIDAD Testing" Height="500" Width="924">
+        Title="GIDAD Testing" Height="500" Width="1048">
 
     <Window.Resources>
         <Style x:Key="ButtonStyle" TargetType="StackPanel">
@@ -17,25 +17,28 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="25*" />
-            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="75*"/>
         </Grid.ColumnDefinitions>
 
-        <Label FontWeight="Bold">GIDAD LOGO GOES HERE</Label>
+        <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0" BorderBrush="Black" BorderThickness="0.5">
+            <MenuItem Header="_Configuracion"/>
+            <MenuItem Header="_Estadisticas"/>
+        </Menu>
 
-        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1" HorizontalAlignment="Center" Width="241">
-            <userControls:TestingBlock ContentText="ORDENES DE TRABAJO"/>
-            <userControls:TestingBlock ContentText="VENTAS POR MOSTRADOR"/>
-            <userControls:TestingBlock ContentText="PROVEEDORES"/>
-            <userControls:TestingBlock ContentText="VARIOS"/>
+        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <userControls:TestingBlock ContentText="ORDENES DE TRABAJO" ButtonForeground="#00E08A" HoverBackground="#73EEBF" PressedBackground="#00E08A" PressedForeground="White"/>
+            <userControls:TestingBlock ContentText="VENTAS POR MOSTRADOR" ButtonForeground="#FF0033" HoverBackground="#FF738F" PressedBackground="#FF0033" PressedForeground="White"/>
+            <userControls:TestingBlock ContentText="PROVEEDORES" ButtonForeground="Blue" HoverBackground="#7373FF" PressedBackground="Blue" PressedForeground="White"/>
+            <userControls:TestingBlock ContentText="GASTOS VARIOS" ButtonForeground="Black" HoverBackground="#737373" PressedBackground="Black" PressedForeground="White"/>
         </UniformGrid>
 
-        <userControls:DynamicDataGrid Grid.Row="1" Grid.Column="1" Margin="0,0,1,80" TriggerColumn="NroOrden" Loaded="DynamicDataGrid_Loaded">
+        <userControls:DynamicDataGrid Grid.Column="1" Grid.Row="1" TriggerColumn="NroOrden" Loaded="DynamicDataGrid_Loaded">
             <userControls:DynamicDataGrid.ColumnHeaders>
                 <system:String>N° DE ORDEN</system:String>
                 <system:String>EFECTIVO</system:String>
@@ -44,6 +47,42 @@
                 <system:String>TRANSFERENCIA</system:String>
             </userControls:DynamicDataGrid.ColumnHeaders>
         </userControls:DynamicDataGrid>
+
+        <Grid Grid.Row="2" Grid.Column="1">
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="33*"/>
+                <ColumnDefinition Width="33*"/>
+                <ColumnDefinition Width="33*"/>
+            </Grid.ColumnDefinitions>
+            
+            <GroupBox Header="TOTAL DIA (Por Ventana)" Grid.Column="0">
+                <StackPanel>
+                    <Label Content="Efectivo: "/>
+                    <Label Content="Tarjeta: "/>
+                    <Label Content="Pagos: "/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="TOTAL GENERAL" Grid.Column="1">
+                <StackPanel>
+                    <Label Content="Total Ventas: "/>
+                    <Label Content="Total Pagos: "/>
+                    <Label Content="Total Tarjeta: "/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="CAJA" Grid.Column="2">
+                <StackPanel>
+                    <Label Content="Inicio de Caja: "/>
+                    <Label Content="En caja: "/>
+                    <Label Content="Caja de Retiro: "/>
+                    <Label Content="Caja Diaria: "/>
+                </StackPanel>
+            </GroupBox>
+
+
+        </Grid>
 
     </Grid>
 </Window>
