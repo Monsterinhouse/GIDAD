@@ -1,16 +1,25 @@
-﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.DirectoryServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using WPF_Test.Models;
 
 namespace WPF_Test.Vista.UserControls
 {
     public partial class DynamicDataGrid : UserControl
     {
-        // Propiedad: Columnas definidas desde el XAML
+        private bool _isUpdatingTriggerColumn = false;
+        private bool _isProcessingPropertyChange = false;
+
+        // ── ColumnHeaders ──
+        public ObservableCollection<string> ColumnHeaders
+        {
+            get => (ObservableCollection<string>)GetValue(ColumnHeadersProperty);
+            set => SetValue(ColumnHeadersProperty, value);
+        }
+
         public static readonly DependencyProperty ColumnHeadersProperty =
             DependencyProperty.Register(
                 nameof(ColumnHeaders),
@@ -18,13 +27,13 @@ namespace WPF_Test.Vista.UserControls
                 typeof(DynamicDataGrid),
                 new PropertyMetadata(null, OnColumnHeadersChanged));
 
-        public ObservableCollection<string> ColumnHeaders
+        // ── TriggerColumn ──
+        public string TriggerColumn
         {
-            get => (ObservableCollection<string>)GetValue(ColumnHeadersProperty);
-            set => SetValue(ColumnHeadersProperty, value);
+            get => (string)GetValue(TriggerColumnProperty);
+            set => SetValue(TriggerColumnProperty, value);
         }
 
-        // Propiedad: columna que dispara nueva fila
         public static readonly DependencyProperty TriggerColumnProperty =
             DependencyProperty.Register(
                 nameof(TriggerColumn),
@@ -32,27 +41,25 @@ namespace WPF_Test.Vista.UserControls
                 typeof(DynamicDataGrid),
                 new PropertyMetadata(null));
 
-        /// <summary>
-        /// Nombre de la propiedad del modelo que, al cambiar, genera una nueva fila.
-        /// Ej: "NroOrden"
-        /// </summary>
-        public string TriggerColumn
+        // ── ServicioComboOptions ──
+        public IEnumerable<string> ServicioComboOptions
         {
-            get => (string)GetValue(TriggerColumnProperty);
-            set => SetValue(TriggerColumnProperty, value);
+            get => (IEnumerable<string>)GetValue(ServicioComboOptionsProperty);
+            set => SetValue(ServicioComboOptionsProperty, value);
         }
 
-        // Colección interna de filas
+        public static readonly DependencyProperty ServicioComboOptionsProperty =
+            DependencyProperty.Register(
+                nameof(ServicioComboOptions),
+                typeof(IEnumerable<string>),
+                typeof(DynamicDataGrid),
+                new PropertyMetadata(null));
+
+        // ── Colección interna de filas ──
         public ObservableCollection<OrdenRow> Rows { get; } = new();
 
-        public DynamicDataGrid()
-        {
-            InitializeComponent();
-            ColumnHeaders = new ObservableCollection<string>();
-            AddNewRow(); // fila inicial
-
-            Loaded += (s, e) => RebuildColumns();
-        }
+        // Clave interna para identificar la columna de Transferencia
+        private const string TransferenciaColumnKey = "TRANSFERENCIA";
 
         // ── Cuando cambian los headers, regenerar columnas ──
         private static void OnColumnHeadersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -63,15 +70,18 @@ namespace WPF_Test.Vista.UserControls
 
         private void RebuildColumns()
         {
+            if (ColumnHeaders == null || InnerGrid == null) return;
+
             InnerGrid.Columns.Clear();
 
-            // Mapeo header → propiedad del modelo (por índice/posición)
-            string[] propertyNames = {
+            string[] propertyNames =
+            {
                 nameof(OrdenRow.NroOrden),
+                nameof(OrdenRow.Servicio),
                 nameof(OrdenRow.Efectivo),
                 nameof(OrdenRow.Seña),
                 nameof(OrdenRow.Tarjeta),
-                nameof(OrdenRow.Transferencia)
+                TransferenciaColumnKey      // señal para columna doble
             };
 
             int i = 0;
@@ -79,17 +89,123 @@ namespace WPF_Test.Vista.UserControls
             {
                 if (i >= propertyNames.Length) break;
 
-                InnerGrid.Columns.Add(new DataGridTextColumn
+                var propName = propertyNames[i];
+
+                // CORRECCIÓN: if / else if / else correctamente encadenados
+                if (propName == TransferenciaColumnKey)
                 {
-                    Header = header,
-                    Binding = new System.Windows.Data.Binding(propertyNames[i]),
-                    Width = new DataGridLength(1, DataGridLengthUnitType.Star)
-                });
+                    InnerGrid.Columns.Add(BuildTransferenciaColumn(header));
+                }
+                else if (propName == nameof(OrdenRow.Servicio) && ServicioComboOptions != null)
+                {
+                    InnerGrid.Columns.Add(BuildServicioColumn(header));
+                }
+                else
+                {
+                    InnerGrid.Columns.Add(new DataGridTextColumn
+                    {
+                        Header = header,
+                        Binding = new Binding(propName)
+                        {
+                            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                        },
+                        Width = new DataGridLength(1, DataGridLengthUnitType.Star)
+                    });
+                }
+
                 i++;
             }
         }
 
-        // ── Agregar fila y suscribirse a sus cambios ──
+        private DataGridTemplateColumn BuildTransferenciaColumn(string header)
+        {
+            // ── Vista (solo lectura): muestra Monto — Nombre ──
+            var displayTemplate = new DataTemplate();
+            var displayPanel = new FrameworkElementFactory(typeof(StackPanel));
+            displayPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+
+            var montoText = new FrameworkElementFactory(typeof(TextBlock));
+            montoText.SetBinding(TextBlock.TextProperty,
+                new Binding(nameof(OrdenRow.TransferenciaMonto)));
+
+            var sep = new FrameworkElementFactory(typeof(TextBlock));
+            sep.SetValue(TextBlock.TextProperty, " — ");
+
+            var nombreText = new FrameworkElementFactory(typeof(TextBlock));
+            nombreText.SetBinding(TextBlock.TextProperty,
+                new Binding(nameof(OrdenRow.TransferenciaNombre)));
+
+            displayPanel.AppendChild(montoText);
+            displayPanel.AppendChild(sep);
+            displayPanel.AppendChild(nombreText);
+            displayTemplate.VisualTree = displayPanel;
+
+            // ── Edición: TextBox de monto + TextBox de nombre ──
+            var editTemplate = new DataTemplate();
+            var editPanel = new FrameworkElementFactory(typeof(StackPanel));
+
+            var montoBox = new FrameworkElementFactory(typeof(TextBox));
+            montoBox.SetBinding(TextBox.TextProperty,
+                new Binding(nameof(OrdenRow.TransferenciaMonto))
+                {
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
+            var nombreBox = new FrameworkElementFactory(typeof(TextBox));
+            nombreBox.SetBinding(TextBox.TextProperty,
+                new Binding(nameof(OrdenRow.TransferenciaNombre))
+                {
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
+            editPanel.AppendChild(montoBox);
+            editPanel.AppendChild(nombreBox);
+            editTemplate.VisualTree = editPanel;
+
+            return new DataGridTemplateColumn
+            {
+                Header = header,
+                CellTemplate = displayTemplate,
+                CellEditingTemplate = editTemplate,
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star)
+            };
+        }
+
+        private DataGridTemplateColumn BuildServicioColumn(string header)
+        {
+            // ── Vista (solo lectura) ──
+            var displayTemplate = new DataTemplate();
+            var displayFactory = new FrameworkElementFactory(typeof(TextBlock));
+            displayFactory.SetBinding(TextBlock.TextProperty,
+                new Binding(nameof(OrdenRow.Servicio)));
+            displayTemplate.VisualTree = displayFactory;
+
+            // ── Edición: ComboBox ──
+            var editTemplate = new DataTemplate();
+            var comboFactory = new FrameworkElementFactory(typeof(ComboBox));
+            comboFactory.SetValue(ComboBox.ItemsSourceProperty, ServicioComboOptions);
+            comboFactory.SetBinding(ComboBox.SelectedItemProperty,
+                new Binding(nameof(OrdenRow.Servicio))
+                {
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Mode = BindingMode.TwoWay
+                });
+
+            // Abre el dropdown automáticamente al entrar en edición
+            comboFactory.AddHandler(ComboBox.LoadedEvent,
+                new RoutedEventHandler((s, e) => ((ComboBox)s).IsDropDownOpen = true));
+
+            editTemplate.VisualTree = comboFactory;
+
+            return new DataGridTemplateColumn
+            {
+                Header = header,
+                CellTemplate = displayTemplate,
+                CellEditingTemplate = editTemplate,
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star)
+            };
+        }
+
         private void AddNewRow()
         {
             var row = new OrdenRow();
@@ -99,30 +215,46 @@ namespace WPF_Test.Vista.UserControls
 
         private void Row_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            // Solo reacciona a la columna disparadora configurada
-            if (e.PropertyName != TriggerColumn) return;
+            if (_isProcessingPropertyChange) return;
 
-            var changedRow = (OrdenRow)sender;
-            int index = Rows.IndexOf(changedRow);
-
-            if (!string.IsNullOrWhiteSpace(changedRow.NroOrden))
+            try
             {
-                // Si es la última fila y tiene valor → agregar nueva
-                if (index == Rows.Count - 1)
-                    AddNewRow();
+                _isProcessingPropertyChange = true;
+
+                if (e.PropertyName != TriggerColumn) return;
+                if (_isUpdatingTriggerColumn) return;
+
+                var changedRow = (OrdenRow)sender;
+                int index = Rows.IndexOf(changedRow);
+
+                if (!string.IsNullOrWhiteSpace(changedRow.NroOrden))
+                {
+                    if (index == Rows.Count - 1)
+                        AddNewRow();
+                }
+                else
+                {
+                    try
+                    {
+                        _isUpdatingTriggerColumn = true;
+                        ClearRow(changedRow);
+                    }
+                    finally
+                    {
+                        _isUpdatingTriggerColumn = false;
+                    }
+
+                    RemoveTrailingEmptyRows();
+                }
             }
-            else
+            finally
             {
-                // Si el campo trigger se vació, eliminar filas vacías sobrantes
-                // (excepto la primera o cualquiera que no sea la última)
-                RemoveTrailingEmptyRows();
+                _isProcessingPropertyChange = false;
             }
         }
 
         private void RemoveTrailingEmptyRows()
         {
-            // Recorre desde el final hacia atrás, eliminando filas vacías
-            // pero siempre dejando al menos una fila
             for (int i = Rows.Count - 1; i >= 1; i--)
             {
                 if (IsRowEmpty(Rows[i]))
@@ -132,18 +264,48 @@ namespace WPF_Test.Vista.UserControls
                 }
                 else
                 {
-                    break; // Encuentra una fila con datos, se detiene
+                    break;
                 }
             }
+        }
+
+        private void ClearRow(OrdenRow row)
+        {
+            row.NroOrden = null;
+            row.Servicio = null;
+            row.Efectivo = null;
+            row.Seña = null;
+            row.Tarjeta = null;
+            row.TransferenciaMonto = null;
+            row.TransferenciaNombre = null;
         }
 
         private bool IsRowEmpty(OrdenRow row)
         {
             return string.IsNullOrWhiteSpace(row.NroOrden)
+                && string.IsNullOrWhiteSpace(row.Servicio)
                 && string.IsNullOrWhiteSpace(row.Efectivo)
                 && string.IsNullOrWhiteSpace(row.Seña)
                 && string.IsNullOrWhiteSpace(row.Tarjeta)
-                && string.IsNullOrWhiteSpace(row.Transferencia);
+                && string.IsNullOrWhiteSpace(row.TransferenciaMonto)
+                && string.IsNullOrWhiteSpace(row.TransferenciaNombre);
+        }
+
+        public bool CanEditField(OrdenRow row, string propertyName)
+        {
+            if (propertyName == TriggerColumn) return true;
+
+            return !string.IsNullOrWhiteSpace(
+                (string)row.GetType().GetProperty(TriggerColumn)?.GetValue(row));
+        }
+
+        public DynamicDataGrid()
+        {
+            InitializeComponent();
+            ColumnHeaders = new ObservableCollection<string>();
+            AddNewRow();
+
+            Loaded += (s, e) => RebuildColumns();
         }
     }
-    }
+}

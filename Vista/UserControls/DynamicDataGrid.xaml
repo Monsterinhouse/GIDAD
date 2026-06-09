@@ -13,6 +13,7 @@
               HeadersVisibility="Column"
               HorizontalGridLinesBrush="Gray"
               VerticalGridLinesBrush="Gray"
+              SelectionUnit="Cell"
               ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Rows}"
               >
         <DataGrid.Resources>

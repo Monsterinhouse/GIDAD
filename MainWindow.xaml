@@ -1,88 +1,187 @@
-﻿<Window x:Class="WPF_Test.MainWindow"
+<Window x:Class="WPF_Test.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WPF_Test"
-        xmlns:userControls="clr-namespace:WPF_Test.Vista.UserControls"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"
-        mc:Ignorable="d"
-        Title="GIDAD Testing" Height="500" Width="1048">
+        xmlns:local="clr-namespace:WPF_Test.Vista.UserControls" xmlns:models="clr-namespace:WPF_Test.Models" 
+        Title="GIDAD Testing" Height="600" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="White">
 
-    <Window.Resources>
-        <Style x:Key="ButtonStyle" TargetType="StackPanel">
-        </Style>
-    </Window.Resources>
-
-    <Grid>
-        <Grid.RowDefinitions>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+		</Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20*"/>
-            <ColumnDefinition Width="75*"/>
-        </Grid.ColumnDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="30*" />
+			<ColumnDefinition Width="70*" />
+		</Grid.ColumnDefinitions>
 
-        <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,0" BorderBrush="Black" BorderThickness="0.5">
-            <MenuItem Header="_Configuracion"/>
+        <Menu Grid.Row="0" Grid.ColumnSpan="2">
+            <MenuItem Header="_Opciones" Height="20"/>
             <MenuItem Header="_Estadisticas"/>
         </Menu>
 
-        <UniformGrid Grid.Row="1" Grid.Column="0" Columns="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <userControls:TestingBlock ContentText="ORDENES DE TRABAJO" ButtonForeground="#00E08A" HoverBackground="#73EEBF" PressedBackground="#00E08A" PressedForeground="White"/>
-            <userControls:TestingBlock ContentText="VENTAS POR MOSTRADOR" ButtonForeground="#FF0033" HoverBackground="#FF738F" PressedBackground="#FF0033" PressedForeground="White"/>
-            <userControls:TestingBlock ContentText="PROVEEDORES" ButtonForeground="Blue" HoverBackground="#7373FF" PressedBackground="Blue" PressedForeground="White"/>
-            <userControls:TestingBlock ContentText="GASTOS VARIOS" ButtonForeground="Black" HoverBackground="#737373" PressedBackground="Black" PressedForeground="White"/>
-        </UniformGrid>
+		<!-- Botones de Navegación -->
+		<UniformGrid Grid.Row="1" Height="Auto" Width="Auto" Columns="1">
+            <Button Name="BtnOrdenesTrabajo"
+                    Click="BtnOrdenesTrabajoClick" Padding="5"
+                    Foreground="#17D958"
+                    FontWeight="Bold" FontFamily="Futura" FontSize="20" BorderThickness="0,1,0,0.5"
+                    Cursor="Hand">
+                <TextBlock Text="ORDENES DE TRABAJO" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button>
 
-        <userControls:DynamicDataGrid Grid.Column="1" Grid.Row="1" TriggerColumn="NroOrden" Loaded="DynamicDataGrid_Loaded">
-            <userControls:DynamicDataGrid.ColumnHeaders>
-                <system:String>N° DE ORDEN</system:String>
-                <system:String>EFECTIVO</system:String>
-                <system:String>SEÑA</system:String>
-                <system:String>TARJETA</system:String>
-                <system:String>TRANSFERENCIA</system:String>
-            </userControls:DynamicDataGrid.ColumnHeaders>
-        </userControls:DynamicDataGrid>
+            <Button Name="BtnVentasMostrador"
+                    Click="BtnVentasMostradorClick" Padding="5" 
+                    Foreground="#0BC8EA" 
+                    FontWeight="Bold" FontFamily="Futura" FontSize="20" BorderThickness="0,0.5,0,0.5"
+                    Cursor="Hand">
+                <TextBlock Text="VENTAS POR MOSTRADOR" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button>
 
+			<Button Name="BtnProveedores" Content="PROVEEDORES" 
+                    Click="BtnProveedoresClick" Padding="5" 
+                    Foreground="#FF2000" 
+                    FontSize="20" FontWeight="Bold" FontFamily="Futura" BorderThickness="0,0.5,0,0.5"
+                    Cursor="Hand"/>
+
+			<Button Name="BtnVarios" Content="VARIOS" 
+                    Click="BtnVariosClick" Padding="5" 
+                    Foreground="#9C27B0"
+                    FontSize="20" FontWeight="Bold" FontFamily="Futura" BorderThickness="0,0.5,0,1"
+                    Cursor="Hand"/>
+		</UniformGrid>
+
+		<!-- Separador -->
+		<Separator Grid.Row="1" VerticalAlignment="Bottom" Height="2" Background="#CCCCCC"/>
+
+		<!-- DataGrids -->
+		<Grid Grid.Row="1" Grid.Column="1">
+			<!-- Grid 1: Órdenes de Trabajo -->
+            <local:DynamicDataGrid x:Name="OrdenesTrabajoGrid"
+                                   Visibility="Visible"
+                                   TriggerColumn="NroOrden"
+                                   ColumnHeaders="{Binding OrdenesTrabajoColumns}"
+                                   ServicioComboOptions="{Binding ServiciosDisponibles}">
+            </local:DynamicDataGrid>
+
+            <!-- Grid 2: Ventas por Mostrador -->
+			<local:DynamicDataGrid x:Name="VentasMostradorGrid"
+                                   Visibility="Collapsed"
+                                   ColumnHeaders="{Binding VentasMostradorColumns}"
+                                   TriggerColumn="NroOrden"/>
+
+			<!-- Grid 3: Proveedores -->
+			<local:DynamicDataGrid x:Name="ProveedoresGrid"
+                                   Visibility="Collapsed"
+                                   ColumnHeaders="{Binding ProveedoresColumns}"
+                                   TriggerColumn="NroOrden"/>
+
+			<!-- Grid 4: Varios -->
+			<local:DynamicDataGrid x:Name="VariosGrid"
+                                   Visibility="Collapsed"
+                                   ColumnHeaders="{Binding VariosColumns}"
+                                   TriggerColumn="NroOrden"/>
+		</Grid>
+
+        <!-- GRID GROUPBOX -->
         <Grid Grid.Row="2" Grid.Column="1">
-            
+
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="33*"/>
-                <ColumnDefinition Width="33*"/>
-                <ColumnDefinition Width="33*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+
+            <GroupBox x:Name="GB_Default" Grid.Column="0">
+                <GroupBox.Header>
+                    <Label Content="TOTAL: " FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <Label Content="TOTAL EFECTIVO: "/>
+                    <Label Content="TOTAL TARJETA: "/>
+                    <Label Content="TOTAL SEÑA: "/>
+                    <Label Content="TOTAL TRANSFERENCIA: "/>
+                </StackPanel>
+            </GroupBox>
             
-            <GroupBox Header="TOTAL DIA (Por Ventana)" Grid.Column="0">
+            <GroupBox x:Name="GBDia" Grid.Column="1">
+                <GroupBox.Header>
+                    <Label Content="TOTAL DIA" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="Efectivo: "/>
-                    <Label Content="Tarjeta: "/>
-                    <Label Content="Pagos: "/>
+                    <Label Content="TOTAL EFECTIVO: "/>
+                    <Label Content="TOTAL TARJETA: "/>
+                    <Label Content="TOTAL SEÑA: "/>
+                    <Label Content="TOTAL TRANSFERENCIA: "/>
+                </StackPanel>
+            </GroupBox>
+            
+            <GroupBox x:Name="GBCaja" Grid.Column="2">
+                <GroupBox.Header>
+                    <Label Content="CAJA" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
+                    <StackPanel>
+                    <Label Content="CAJA DIA ANTERIOR: "/>
+                    <Label Content="CAJA RETIRO: "/>
+                    <Label Content="CAJA HOY: "/>
+                    <Label Content="CAJA TOTAL: "/>
                 </StackPanel>
             </GroupBox>
 
-            <GroupBox Header="TOTAL GENERAL" Grid.Column="1">
+            <!-- GROUPBOX TOGGLEABLES -->
+            <GroupBox x:Name="GB_OrdenTrabajo" Grid.Column="0" Visibility="Hidden">
+                <GroupBox.Header>
+                    <Label Content="TOTAL: ORDENES DE TRABAJO" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="Total Ventas: "/>
-                    <Label Content="Total Pagos: "/>
-                    <Label Content="Total Tarjeta: "/>
+                    <Label Content="TOTAL EFECTIVO: "/>
+                    <Label Content="TOTAL TARJETA: "/>
+                    <Label Content="TOTAL SEÑA: "/>
+                    <Label Content="TOTAL TRANSFERENCIA: "/>
                 </StackPanel>
             </GroupBox>
 
-            <GroupBox Header="CAJA" Grid.Column="2">
+            <GroupBox x:Name="GB_VentasMostrador" Grid.Column="0" Visibility="Hidden">
+                <GroupBox.Header>
+                    <Label Content="TOTAL: VENTAS DE MOSTRADOR" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="Inicio de Caja: "/>
-                    <Label Content="En caja: "/>
-                    <Label Content="Caja de Retiro: "/>
-                    <Label Content="Caja Diaria: "/>
+                    <Label Content="CAJA DIA ANTERIOR: "/>
+                    <Label Content="CAJA RETIRO: "/>
+                    <Label Content="CAJA HOY: "/>
+                    <Label Content="CAJA TOTAL: "/>
                 </StackPanel>
             </GroupBox>
 
+            <GroupBox x:Name="GB_Proveedores" Grid.Column="0" Visibility="Hidden">
+                <GroupBox.Header>
+                    <Label Content="TOTAL: PROVEEDORES" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <Label Content="CAJA DIA ANTERIOR: "/>
+                    <Label Content="CAJA RETIRO: "/>
+                    <Label Content="CAJA HOY: "/>
+                    <Label Content="CAJA TOTAL: "/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox x:Name="GB_Varios" Grid.Column="0" Visibility="Hidden">
+                <GroupBox.Header>
+                    <Label Content="TOTAL: VARIOS" FontSize="16" FontWeight="Bold"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <Label Content="CAJA DIA ANTERIOR: "/>
+                    <Label Content="CAJA RETIRO: "/>
+                    <Label Content="CAJA HOY: "/>
+                    <Label Content="CAJA TOTAL: "/>
+                </StackPanel>
+            </GroupBox>
 
         </Grid>
-
+        
+        
     </Grid>
 </Window>

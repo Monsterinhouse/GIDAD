@@ -1,20 +1,27 @@
-﻿// Modelo/OrdenFila.cs
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace WPF_Test.Models
 {
     public class OrdenRow : INotifyPropertyChanged
     {
         private string _nroOrden;
+        private string _servicio;
         private string _efectivo;
         private string _seña;
         private string _tarjeta;
-        private string _transferencia;
+        private string _transferenciaMonto;
+        private string _transferenciaNombre;
 
         public string NroOrden
         {
             get => _nroOrden;
             set { _nroOrden = value; OnPropertyChanged(nameof(NroOrden)); }
+        }
+
+        public string Servicio
+        {
+            get => _servicio;
+            set { _servicio = value; OnPropertyChanged(nameof(Servicio)); }
         }
 
         public string Efectivo
@@ -35,10 +42,16 @@ namespace WPF_Test.Models
             set { _tarjeta = value; OnPropertyChanged(nameof(Tarjeta)); }
         }
 
-        public string Transferencia
+        public string TransferenciaMonto
         {
-            get => _transferencia;
-            set { _transferencia = value; OnPropertyChanged(nameof(Transferencia)); }
+            get => _transferenciaMonto;
+            set { _transferenciaMonto = value; OnPropertyChanged(nameof(TransferenciaMonto)); }
+        }
+
+        public string TransferenciaNombre
+        {
+            get => _transferenciaNombre;
+            set { _transferenciaNombre = value; OnPropertyChanged(nameof(TransferenciaNombre)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

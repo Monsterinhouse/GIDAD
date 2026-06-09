@@ -5,8 +5,5 @@
     <Compile Update="Vista\UserControls\DynamicDataGrid.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Vista\UserControls\TestingBlock.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 </Project>
