@@ -1,0 +1,68 @@
+{
+  "OrdenesTrabajo": [
+    {
+      "NroOrden": null,
+      "Servicio": null,
+      "Efectivo": null,
+      "Se\u00F1a": null,
+      "Tarjeta": null,
+      "MedioPago": null,
+      "TransferenciaMonto": null,
+      "TransferenciaNombre": null
+    }
+  ],
+  "VentasMostrador": [
+    {
+      "NroOrden": null,
+      "Servicio": null,
+      "Efectivo": null,
+      "Se\u00F1a": null,
+      "Tarjeta": null,
+      "MedioPago": null,
+      "TransferenciaMonto": null,
+      "TransferenciaNombre": null
+    }
+  ],
+  "Proveedores": [
+    {
+      "NroOrden": null,
+      "Servicio": null,
+      "Efectivo": null,
+      "Se\u00F1a": null,
+      "Tarjeta": null,
+      "MedioPago": null,
+      "TransferenciaMonto": null,
+      "TransferenciaNombre": null
+    }
+  ],
+  "Varios": [
+    {
+      "NroOrden": null,
+      "Servicio": null,
+      "Efectivo": null,
+      "Se\u00F1a": null,
+      "Tarjeta": null,
+      "MedioPago": null,
+      "TransferenciaMonto": null,
+      "TransferenciaNombre": null
+    }
+  ],
+  "OT_Efectivo": 0,
+  "OT_Se\u00F1a": 0,
+  "OT_Tarjeta": 0,
+  "OT_Transferencia": 0,
+  "VM_Efectivo": 0,
+  "VM_Se\u00F1a": 0,
+  "VM_Tarjeta": 0,
+  "VM_Transferencia": 0,
+  "PR_Efectivo": 0,
+  "PR_Transferencia": 0,
+  "VA_Efectivo": 0,
+  "VA_Transferencia": 0,
+  "Dia_Efectivo": 0,
+  "Dia_Se\u00F1a": 0,
+  "Dia_Tarjeta": 0,
+  "Dia_Transferencia": 0,
+  "Caja_Hoy": 0,
+  "Timestamp": "2026-06-12T22:43:17.7865094-03:00"
+}

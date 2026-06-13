@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -13,55 +14,65 @@ namespace WPF_Test.Vista.UserControls
         private bool _isUpdatingTriggerColumn = false;
         private bool _isProcessingPropertyChange = false;
 
-        // ── ColumnHeaders ──
         public ObservableCollection<string> ColumnHeaders
         {
             get => (ObservableCollection<string>)GetValue(ColumnHeadersProperty);
             set => SetValue(ColumnHeadersProperty, value);
         }
-
         public static readonly DependencyProperty ColumnHeadersProperty =
-            DependencyProperty.Register(
-                nameof(ColumnHeaders),
-                typeof(ObservableCollection<string>),
-                typeof(DynamicDataGrid),
+            DependencyProperty.Register(nameof(ColumnHeaders),
+                typeof(ObservableCollection<string>), typeof(DynamicDataGrid),
                 new PropertyMetadata(null, OnColumnHeadersChanged));
 
-        // ── TriggerColumn ──
+        public Dictionary<string, string> ColumnPropertyMap
+        {
+            get => (Dictionary<string, string>)GetValue(ColumnPropertyMapProperty);
+            set => SetValue(ColumnPropertyMapProperty, value);
+        }
+        public static readonly DependencyProperty ColumnPropertyMapProperty =
+            DependencyProperty.Register(nameof(ColumnPropertyMap),
+                typeof(Dictionary<string, string>), typeof(DynamicDataGrid),
+                new PropertyMetadata(null));
+
         public string TriggerColumn
         {
             get => (string)GetValue(TriggerColumnProperty);
             set => SetValue(TriggerColumnProperty, value);
         }
-
         public static readonly DependencyProperty TriggerColumnProperty =
-            DependencyProperty.Register(
-                nameof(TriggerColumn),
-                typeof(string),
-                typeof(DynamicDataGrid),
+            DependencyProperty.Register(nameof(TriggerColumn),
+                typeof(string), typeof(DynamicDataGrid),
                 new PropertyMetadata(null));
 
-        // ── ServicioComboOptions ──
         public IEnumerable<string> ServicioComboOptions
         {
             get => (IEnumerable<string>)GetValue(ServicioComboOptionsProperty);
             set => SetValue(ServicioComboOptionsProperty, value);
         }
-
         public static readonly DependencyProperty ServicioComboOptionsProperty =
-            DependencyProperty.Register(
-                nameof(ServicioComboOptions),
-                typeof(IEnumerable<string>),
-                typeof(DynamicDataGrid),
+            DependencyProperty.Register(nameof(ServicioComboOptions),
+                typeof(IEnumerable<string>), typeof(DynamicDataGrid),
                 new PropertyMetadata(null));
 
-        // ── Colección interna de filas ──
         public ObservableCollection<OrdenRow> Rows { get; } = new();
 
-        // Clave interna para identificar la columna de Transferencia
         private const string TransferenciaColumnKey = "TRANSFERENCIA";
 
-        // ── Cuando cambian los headers, regenerar columnas ──
+        // Propiedades que son ComboBox (mapeadas a colecciones con ServicioComboOptions)
+        private static readonly HashSet<string> ComboBoxProperties = new()
+        {
+            nameof(OrdenRow.Servicio),
+            nameof(OrdenRow.MedioPago)
+        };
+
+        // Propiedades que son dinero
+        private static readonly HashSet<string> MoneyProperties = new()
+        {
+            nameof(OrdenRow.Efectivo),
+            nameof(OrdenRow.Seña),
+            nameof(OrdenRow.Tarjeta)
+        };
+
         private static void OnColumnHeadersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is DynamicDataGrid control && control.IsLoaded)
@@ -74,33 +85,26 @@ namespace WPF_Test.Vista.UserControls
 
             InnerGrid.Columns.Clear();
 
-            string[] propertyNames =
-            {
-                nameof(OrdenRow.NroOrden),
-                nameof(OrdenRow.Servicio),
-                nameof(OrdenRow.Efectivo),
-                nameof(OrdenRow.Seña),
-                nameof(OrdenRow.Tarjeta),
-                TransferenciaColumnKey      // señal para columna doble
-            };
-
-            int i = 0;
             foreach (var header in ColumnHeaders)
             {
-                if (i >= propertyNames.Length) break;
+                string propName = null;
+                ColumnPropertyMap?.TryGetValue(header, out propName);
 
-                var propName = propertyNames[i];
-
-                // CORRECCIÓN: if / else if / else correctamente encadenados
                 if (propName == TransferenciaColumnKey)
                 {
                     InnerGrid.Columns.Add(BuildTransferenciaColumn(header));
                 }
-                else if (propName == nameof(OrdenRow.Servicio) && ServicioComboOptions != null)
+                else if (propName != null && ComboBoxProperties.Contains(propName) && ServicioComboOptions != null)
                 {
-                    InnerGrid.Columns.Add(BuildServicioColumn(header));
+                    // CORRECCIÓN: se pasa propName para que el ComboBox bindee a la propiedad correcta
+                    InnerGrid.Columns.Add(BuildComboColumn(header, propName));
                 }
-                else
+                else if (propName != null && MoneyProperties.Contains(propName))
+                {
+                    // CORRECCIÓN: columna de dinero con template propio para edición
+                    InnerGrid.Columns.Add(BuildMoneyColumn(header, propName));
+                }
+                else if (propName != null)
                 {
                     InnerGrid.Columns.Add(new DataGridTextColumn
                     {
@@ -112,55 +116,32 @@ namespace WPF_Test.Vista.UserControls
                         Width = new DataGridLength(1, DataGridLengthUnitType.Star)
                     });
                 }
-
-                i++;
             }
         }
 
-        private DataGridTemplateColumn BuildTransferenciaColumn(string header)
+        // NUEVO: columna con formato de dinero usando DataGridTemplateColumn
+        private static DataGridTemplateColumn BuildMoneyColumn(string header, string propName)
         {
-            // ── Vista (solo lectura): muestra Monto — Nombre ──
+            // Lectura: TextBlock formateado
             var displayTemplate = new DataTemplate();
-            var displayPanel = new FrameworkElementFactory(typeof(StackPanel));
-            displayPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+            var displayBlock = new FrameworkElementFactory(typeof(TextBlock));
+            displayBlock.SetBinding(TextBlock.TextProperty, new Binding(propName)
+            {
+                StringFormat = "${0:N2}"
+            });
+            displayBlock.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Right);
+            displayBlock.SetValue(TextBlock.PaddingProperty, new Thickness(0, 0, 6, 0));
+            displayTemplate.VisualTree = displayBlock;
 
-            var montoText = new FrameworkElementFactory(typeof(TextBlock));
-            montoText.SetBinding(TextBlock.TextProperty,
-                new Binding(nameof(OrdenRow.TransferenciaMonto)));
-
-            var sep = new FrameworkElementFactory(typeof(TextBlock));
-            sep.SetValue(TextBlock.TextProperty, " — ");
-
-            var nombreText = new FrameworkElementFactory(typeof(TextBlock));
-            nombreText.SetBinding(TextBlock.TextProperty,
-                new Binding(nameof(OrdenRow.TransferenciaNombre)));
-
-            displayPanel.AppendChild(montoText);
-            displayPanel.AppendChild(sep);
-            displayPanel.AppendChild(nombreText);
-            displayTemplate.VisualTree = displayPanel;
-
-            // ── Edición: TextBox de monto + TextBox de nombre ──
+            // Edición: TextBox limpio alineado a la derecha
             var editTemplate = new DataTemplate();
-            var editPanel = new FrameworkElementFactory(typeof(StackPanel));
-
-            var montoBox = new FrameworkElementFactory(typeof(TextBox));
-            montoBox.SetBinding(TextBox.TextProperty,
-                new Binding(nameof(OrdenRow.TransferenciaMonto))
-                {
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-            var nombreBox = new FrameworkElementFactory(typeof(TextBox));
-            nombreBox.SetBinding(TextBox.TextProperty,
-                new Binding(nameof(OrdenRow.TransferenciaNombre))
-                {
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
-
-            editPanel.AppendChild(montoBox);
-            editPanel.AppendChild(nombreBox);
-            editTemplate.VisualTree = editPanel;
+            var editBox = new FrameworkElementFactory(typeof(TextBox));
+            editBox.SetBinding(TextBox.TextProperty, new Binding(propName)
+            {
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+            editBox.SetValue(TextBox.TextAlignmentProperty, TextAlignment.Right);
+            editTemplate.VisualTree = editBox;
 
             return new DataGridTemplateColumn
             {
@@ -171,31 +152,79 @@ namespace WPF_Test.Vista.UserControls
             };
         }
 
-        private DataGridTemplateColumn BuildServicioColumn(string header)
+        // CORREGIDO: recibe propName para bindear a la propiedad correcta (Servicio o MedioPago)
+        private DataGridTemplateColumn BuildComboColumn(string header, string propName)
         {
-            // ── Vista (solo lectura) ──
+            // Lectura
             var displayTemplate = new DataTemplate();
             var displayFactory = new FrameworkElementFactory(typeof(TextBlock));
-            displayFactory.SetBinding(TextBlock.TextProperty,
-                new Binding(nameof(OrdenRow.Servicio)));
+            displayFactory.SetBinding(TextBlock.TextProperty, new Binding(propName));
             displayTemplate.VisualTree = displayFactory;
 
-            // ── Edición: ComboBox ──
+            // Edición
             var editTemplate = new DataTemplate();
             var comboFactory = new FrameworkElementFactory(typeof(ComboBox));
             comboFactory.SetValue(ComboBox.ItemsSourceProperty, ServicioComboOptions);
-            comboFactory.SetBinding(ComboBox.SelectedItemProperty,
-                new Binding(nameof(OrdenRow.Servicio))
-                {
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                    Mode = BindingMode.TwoWay
-                });
-
-            // Abre el dropdown automáticamente al entrar en edición
+            comboFactory.SetBinding(ComboBox.SelectedItemProperty, new Binding(propName)
+            {
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                Mode = BindingMode.TwoWay
+            });
             comboFactory.AddHandler(ComboBox.LoadedEvent,
                 new RoutedEventHandler((s, e) => ((ComboBox)s).IsDropDownOpen = true));
-
             editTemplate.VisualTree = comboFactory;
+
+            return new DataGridTemplateColumn
+            {
+                Header = header,
+                CellTemplate = displayTemplate,
+                CellEditingTemplate = editTemplate,
+                Width = new DataGridLength(1, DataGridLengthUnitType.Star)
+            };
+        }
+
+        private DataGridTemplateColumn BuildTransferenciaColumn(string header)
+        {
+            var displayTemplate = new DataTemplate();
+            var displayPanel = new FrameworkElementFactory(typeof(StackPanel));
+            displayPanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+
+            var montoText = new FrameworkElementFactory(typeof(TextBlock));
+            montoText.SetBinding(TextBlock.TextProperty, new Binding(nameof(OrdenRow.TransferenciaMonto))
+            {
+                StringFormat = "${0:N2}"
+            });
+
+            var sep = new FrameworkElementFactory(typeof(TextBlock));
+            sep.SetValue(TextBlock.TextProperty, " — ");
+
+            var nombreText = new FrameworkElementFactory(typeof(TextBlock));
+            nombreText.SetBinding(TextBlock.TextProperty, new Binding(nameof(OrdenRow.TransferenciaNombre)));
+
+            displayPanel.AppendChild(montoText);
+            displayPanel.AppendChild(sep);
+            displayPanel.AppendChild(nombreText);
+            displayTemplate.VisualTree = displayPanel;
+
+            var editTemplate = new DataTemplate();
+            var editPanel = new FrameworkElementFactory(typeof(StackPanel));
+
+            var montoBox = new FrameworkElementFactory(typeof(TextBox));
+            montoBox.SetBinding(TextBox.TextProperty, new Binding(nameof(OrdenRow.TransferenciaMonto))
+            {
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+            montoBox.SetValue(TextBox.TextAlignmentProperty, TextAlignment.Right);
+
+            var nombreBox = new FrameworkElementFactory(typeof(TextBox));
+            nombreBox.SetBinding(TextBox.TextProperty, new Binding(nameof(OrdenRow.TransferenciaNombre))
+            {
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+
+            editPanel.AppendChild(montoBox);
+            editPanel.AppendChild(nombreBox);
+            editTemplate.VisualTree = editPanel;
 
             return new DataGridTemplateColumn
             {
@@ -216,11 +245,9 @@ namespace WPF_Test.Vista.UserControls
         private void Row_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (_isProcessingPropertyChange) return;
-
             try
             {
                 _isProcessingPropertyChange = true;
-
                 if (e.PropertyName != TriggerColumn) return;
                 if (_isUpdatingTriggerColumn) return;
 
@@ -243,7 +270,6 @@ namespace WPF_Test.Vista.UserControls
                     {
                         _isUpdatingTriggerColumn = false;
                     }
-
                     RemoveTrailingEmptyRows();
                 }
             }
@@ -262,10 +288,7 @@ namespace WPF_Test.Vista.UserControls
                     Rows[i].PropertyChanged -= Row_PropertyChanged;
                     Rows.RemoveAt(i);
                 }
-                else
-                {
-                    break;
-                }
+                else break;
             }
         }
 
@@ -276,6 +299,7 @@ namespace WPF_Test.Vista.UserControls
             row.Efectivo = null;
             row.Seña = null;
             row.Tarjeta = null;
+            row.MedioPago = null;
             row.TransferenciaMonto = null;
             row.TransferenciaNombre = null;
         }
@@ -287,6 +311,7 @@ namespace WPF_Test.Vista.UserControls
                 && string.IsNullOrWhiteSpace(row.Efectivo)
                 && string.IsNullOrWhiteSpace(row.Seña)
                 && string.IsNullOrWhiteSpace(row.Tarjeta)
+                && string.IsNullOrWhiteSpace(row.MedioPago)
                 && string.IsNullOrWhiteSpace(row.TransferenciaMonto)
                 && string.IsNullOrWhiteSpace(row.TransferenciaNombre);
         }
@@ -294,9 +319,30 @@ namespace WPF_Test.Vista.UserControls
         public bool CanEditField(OrdenRow row, string propertyName)
         {
             if (propertyName == TriggerColumn) return true;
-
             return !string.IsNullOrWhiteSpace(
                 (string)row.GetType().GetProperty(TriggerColumn)?.GetValue(row));
+        }
+
+        // NUEVO: reemplaza todas las filas actuales por las provistas (usado para recuperación)
+        public void CargarFilas(IEnumerable<OrdenRow> filas)
+        {
+            // Desuscribir y limpiar filas actuales
+            foreach (var r in Rows.ToList())
+            {
+                r.PropertyChanged -= Row_PropertyChanged;
+                Rows.Remove(r);
+            }
+
+            // Cargar las filas recuperadas
+            foreach (var f in filas)
+            {
+                f.PropertyChanged += Row_PropertyChanged;
+                Rows.Add(f);
+            }
+
+            // Asegurar que siempre haya una fila vacía al final
+            if (Rows.Count == 0 || !IsRowEmpty(Rows[Rows.Count - 1]))
+                AddNewRow();
         }
 
         public DynamicDataGrid()
@@ -304,7 +350,6 @@ namespace WPF_Test.Vista.UserControls
             InitializeComponent();
             ColumnHeaders = new ObservableCollection<string>();
             AddNewRow();
-
             Loaded += (s, e) => RebuildColumns();
         }
     }

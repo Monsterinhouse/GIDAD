@@ -1,7 +1,8 @@
 <Window x:Class="WPF_Test.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:WPF_Test.Vista.UserControls" xmlns:models="clr-namespace:WPF_Test.Models" 
+        xmlns:local="clr-namespace:WPF_Test.Vista.UserControls" 
+        xmlns:models="clr-namespace:WPF_Test.Models" 
         Title="GIDAD Testing" Height="600" Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="White">
@@ -19,8 +20,8 @@
 		</Grid.ColumnDefinitions>
 
         <Menu Grid.Row="0" Grid.ColumnSpan="2">
-            <MenuItem Header="_Opciones" Height="20"/>
-            <MenuItem Header="_Estadisticas"/>
+            <MenuItem Header="_Opciones" Height="20" Click="MenuItem_Opciones_Click"/>
+            <MenuItem Header="_Estadisticas" Click="MenuItem_Estadisticas_Click"/>
         </Menu>
 
 		<!-- Botones de Navegación -->
@@ -64,25 +65,31 @@
                                    Visibility="Visible"
                                    TriggerColumn="NroOrden"
                                    ColumnHeaders="{Binding OrdenesTrabajoColumns}"
-                                   ServicioComboOptions="{Binding ServiciosDisponibles}">
+                                   ServicioComboOptions="{Binding ServiciosDisponibles}"
+                                   ColumnPropertyMap="{Binding OrdenesTrabajoMap}">
             </local:DynamicDataGrid>
 
             <!-- Grid 2: Ventas por Mostrador -->
 			<local:DynamicDataGrid x:Name="VentasMostradorGrid"
                                    Visibility="Collapsed"
                                    ColumnHeaders="{Binding VentasMostradorColumns}"
+                                   ColumnPropertyMap="{Binding VentasMostradorMap}"
                                    TriggerColumn="NroOrden"/>
 
 			<!-- Grid 3: Proveedores -->
 			<local:DynamicDataGrid x:Name="ProveedoresGrid"
                                    Visibility="Collapsed"
                                    ColumnHeaders="{Binding ProveedoresColumns}"
+                                   ColumnPropertyMap="{Binding ProveedoresMap}"
+                                   ServicioComboOptions="{Binding MediosPagoDisponibles}"
                                    TriggerColumn="NroOrden"/>
 
 			<!-- Grid 4: Varios -->
 			<local:DynamicDataGrid x:Name="VariosGrid"
                                    Visibility="Collapsed"
                                    ColumnHeaders="{Binding VariosColumns}"
+                                   ColumnPropertyMap="{Binding VariosMap}"
+                                   ServicioComboOptions="{Binding MediosPagoDisponibles}"
                                    TriggerColumn="NroOrden"/>
 		</Grid>
 
@@ -101,33 +108,55 @@
                 </GroupBox.Header>
                 <StackPanel>
                     <Label Content="TOTAL EFECTIVO: "/>
-                    <Label Content="TOTAL TARJETA: "/>
                     <Label Content="TOTAL SEÑA: "/>
+                    <Label Content="TOTAL TARJETA: "/>
                     <Label Content="TOTAL TRANSFERENCIA: "/>
                 </StackPanel>
             </GroupBox>
-            
+
             <GroupBox x:Name="GBDia" Grid.Column="1">
                 <GroupBox.Header>
                     <Label Content="TOTAL DIA" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="TOTAL EFECTIVO: "/>
-                    <Label Content="TOTAL TARJETA: "/>
-                    <Label Content="TOTAL SEÑA: "/>
-                    <Label Content="TOTAL TRANSFERENCIA: "/>
+                    <Label>
+                        <TextBlock Text="{Binding Dia_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding Dia_Seña,          StringFormat='TOTAL SEÑA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding Dia_Tarjeta,       StringFormat='TOTAL TARJETA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding Dia_Transferencia, StringFormat='TOTAL TRANSFERENCIA: ${0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
-            
+
             <GroupBox x:Name="GBCaja" Grid.Column="2">
                 <GroupBox.Header>
                     <Label Content="CAJA" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
-                    <StackPanel>
-                    <Label Content="CAJA DIA ANTERIOR: "/>
-                    <Label Content="CAJA RETIRO: "/>
-                    <Label Content="CAJA HOY: "/>
-                    <Label Content="CAJA TOTAL: "/>
+                <StackPanel>
+                    <Label>
+                        <TextBlock Text="{Binding Caja_DiaAnterior, StringFormat='CAJA DIA ANTERIOR: ${0:N2}'}"/>
+                    </Label>
+
+                    <!-- Campo editable: Retiro -->
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Label Content="CAJA RETIRO: $" VerticalAlignment="Center"/>
+                        <TextBox Width="100"
+                     Text="{Binding Caja_Retiro, UpdateSourceTrigger=PropertyChanged}"
+                     VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Label>
+                        <TextBlock Text="{Binding Caja_Hoy, StringFormat='CAJA HOY: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding Caja_Total, StringFormat='CAJA TOTAL: ${0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
 
@@ -137,10 +166,18 @@
                     <Label Content="TOTAL: ORDENES DE TRABAJO" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="TOTAL EFECTIVO: "/>
-                    <Label Content="TOTAL TARJETA: "/>
-                    <Label Content="TOTAL SEÑA: "/>
-                    <Label Content="TOTAL TRANSFERENCIA: "/>
+                    <Label>
+                        <TextBlock Text="{Binding OT_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding OT_Tarjeta,       StringFormat='TOTAL TARJETA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding OT_Seña,          StringFormat='TOTAL SEÑA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding OT_Transferencia, StringFormat='TOTAL TRANSFERENCIA: ${0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
 
@@ -149,10 +186,18 @@
                     <Label Content="TOTAL: VENTAS DE MOSTRADOR" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="CAJA DIA ANTERIOR: "/>
-                    <Label Content="CAJA RETIRO: "/>
-                    <Label Content="CAJA HOY: "/>
-                    <Label Content="CAJA TOTAL: "/>
+                    <Label>
+                        <TextBlock Text="{Binding VM_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding VM_Tarjeta,       StringFormat='TOTAL TARJETA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding VM_Seña,          StringFormat='TOTAL SEÑA: ${0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding VM_Transferencia, StringFormat='TOTAL TRANSFERENCIA: ${0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
 
@@ -161,10 +206,12 @@
                     <Label Content="TOTAL: PROVEEDORES" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="CAJA DIA ANTERIOR: "/>
-                    <Label Content="CAJA RETIRO: "/>
-                    <Label Content="CAJA HOY: "/>
-                    <Label Content="CAJA TOTAL: "/>
+                    <Label>
+                        <TextBlock Text="{Binding PR_Efectivo,      StringFormat='TOTAL EFECTIVO: $-{0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding PR_Transferencia, StringFormat='TOTAL TRANSFERENCIA: $-{0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
 
@@ -173,15 +220,14 @@
                     <Label Content="TOTAL: VARIOS" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <Label Content="CAJA DIA ANTERIOR: "/>
-                    <Label Content="CAJA RETIRO: "/>
-                    <Label Content="CAJA HOY: "/>
-                    <Label Content="CAJA TOTAL: "/>
+                    <Label>
+                        <TextBlock Text="{Binding VA_Efectivo,      StringFormat='TOTAL EFECTIVO: $-{0:N2}'}"/>
+                    </Label>
+                    <Label>
+                        <TextBlock Text="{Binding VA_Transferencia, StringFormat='TOTAL TRANSFERENCIA: $-{0:N2}'}"/>
+                    </Label>
                 </StackPanel>
             </GroupBox>
-
         </Grid>
-        
-        
     </Grid>
 </Window>

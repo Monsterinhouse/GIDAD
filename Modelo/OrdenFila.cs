@@ -11,6 +11,9 @@ namespace WPF_Test.Models
         private string _tarjeta;
         private string _transferenciaMonto;
         private string _transferenciaNombre;
+        private string _monto;
+        private string _motivo;
+        private string _medioPago;
 
         public string NroOrden
         {
@@ -52,6 +55,24 @@ namespace WPF_Test.Models
         {
             get => _transferenciaNombre;
             set { _transferenciaNombre = value; OnPropertyChanged(nameof(TransferenciaNombre)); }
+        }
+
+        public string Monto
+        {
+            get => _monto;
+            set { _monto = value; OnPropertyChanged(nameof(Monto)); }
+        }
+
+        public string Motivo
+        {
+            get => _motivo;
+            set { _motivo = value; OnPropertyChanged(nameof(Motivo)); }
+        }
+
+        public string MedioPago
+        {
+            get => _medioPago;
+            set { _medioPago = value; OnPropertyChanged(nameof(MedioPago)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -14,6 +14,9 @@
               HorizontalGridLinesBrush="Gray"
               VerticalGridLinesBrush="Gray"
               SelectionUnit="Cell"
+              AlternationCount="2"
+              RowBackground="White"
+              AlternatingRowBackground="LightGray"
               ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=Rows}"
               >
         <DataGrid.Resources>
