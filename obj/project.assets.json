@@ -1,7 +1,7 @@
 {
-  "version": 4,
+  "version": 3,
   "targets": {
-    "net9.0-windows": {
+    "net9.0-windows7.0": {
       "HarfBuzzSharp/8.3.1.1": {
         "type": "package",
         "dependencies": {
@@ -1631,7 +1631,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net9.0-windows": [
+    "net9.0-windows7.0": [
       "Microsoft.Data.Sqlite >= 10.0.9",
       "Microsoft.Data.Sqlite.Core >= 10.0.9",
       "Npgsql >= 10.0.3",
@@ -1639,19 +1639,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Admin\\.nuget\\packages\\": {}
+    "C:\\Users\\Lucas\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\GIDAD\\WPF-Test.csproj",
+      "projectUniqueName": "C:\\Users\\Lucas\\Desktop\\GIDAD\\WPF-Test.csproj",
       "projectName": "WPF-Test",
-      "projectPath": "D:\\GIDAD\\WPF-Test.csproj",
-      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "D:\\GIDAD\\obj\\",
+      "projectPath": "C:\\Users\\Lucas\\Desktop\\GIDAD\\WPF-Test.csproj",
+      "packagesPath": "C:\\Users\\Lucas\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Lucas\\Desktop\\GIDAD\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Lucas\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1662,8 +1662,7 @@
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net9.0-windows": {
-          "framework": "net9.0-windows7.0",
+        "net9.0-windows7.0": {
           "targetAlias": "net9.0-windows",
           "projectReferences": {}
         }
@@ -1678,11 +1677,10 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.300"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
-      "net9.0-windows": {
-        "framework": "net9.0-windows7.0",
+      "net9.0-windows7.0": {
         "targetAlias": "net9.0-windows",
         "dependencies": {
           "Microsoft.Data.Sqlite": {
@@ -1721,7 +1719,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -1733,7 +1731,7 @@
       "message": "El paquete \"SkiaSharp.Views.WPF 3.119.0\" se restauró con \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\" en lugar de la plataforma de destino del proyecto \"net9.0-windows7.0\". Puede que el paquete no sea totalmente compatible con el proyecto.",
       "libraryId": "SkiaSharp.Views.WPF",
       "targetGraphs": [
-        "net9.0-windows"
+        "net9.0-windows7.0"
       ]
     }
   ]

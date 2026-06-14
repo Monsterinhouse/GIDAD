@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Windows;
 using WPF_Test.Models;
 using WPF_Test.Services;
@@ -85,18 +87,17 @@ namespace WPF_Test
         public decimal Caja_Hoy { get => _cajaHoy; set { _cajaHoy = value; OnPropertyChanged(nameof(Caja_Hoy)); } }
 
         // -- DATABASE --
-        private readonly DatabaseService _db = new(
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GIDAD", "gidad.db")
-        );
+        private static readonly string BaseDbDir =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Database");
+
+        private readonly DatabaseService _db = new(Path.Combine(BaseDbDir, "gidad.db"));
 
         private DatabaseService _databaseService;
         private AutoguardadoService _autoguardado;
+        private JsonTypeInfo _opts;
 
         private string RutaTempActual => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "GIDAD", "temp", $"snapshot_{DateTime.Now:yyyyMMdd}.json");
+            BaseDbDir, "temp", $"snapshot_{DateTime.Now:yyyyMMdd}.json");
 
         private void RecalcularDia()
         {
@@ -279,7 +280,26 @@ namespace WPF_Test
         private async Task GuardarTemporalAsync()
         {
             var snap = ConstruirSnapshot();
-            await SnapshotService.GuardarAsync(snap, _rutaTempActual);
+
+            var ruta = RutaTempActual;
+
+            // Fallback: si por algún motivo la ruta calculada es inválida, usar una ruta default
+            if (string.IsNullOrWhiteSpace(ruta))
+            {
+                var carpetaDefault = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "Database", "temp");
+                Directory.CreateDirectory(carpetaDefault);
+                ruta = Path.Combine(carpetaDefault, $"snapshot_{DateTime.Now:yyyyMMdd}.json");
+            }
+
+            snap.Timestamp = DateTime.Now;
+
+            var dir = Path.GetDirectoryName(ruta);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+
+            var json = JsonSerializer.Serialize(snap, _opts);
+            await File.WriteAllTextAsync(ruta, json);
         }
 
         // ── Guardado definitivo en BD (23:59 o manual) ──
@@ -307,12 +327,14 @@ namespace WPF_Test
                     Dia_Efectivo, Dia_Seña, Dia_Tarjeta, Dia_Transferencia);
 
                 await _db.GuardarCajaAsync(sesionId, 0, 0, Caja_Hoy, Caja_Hoy);
+
+                MessageBox.Show($"Guardado OK. SesionId = {sesionId}");
             }
             catch (Exception ex)
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                    MessageBox.Show($"Error al guardar en BD: {ex.Message}", "Error",
-                        MessageBoxButton.OK, MessageBoxImage.Error));
+                // Mostrar el error completo, sin Dispatcher
+                MessageBox.Show($"ERROR: {ex.GetType().Name}\n{ex.Message}\n\n{ex.StackTrace}",
+                    "Error al guardar", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -349,9 +371,8 @@ namespace WPF_Test
 
         private async Task VerificarRecuperacionAsync()
         {
-            var carpetaTemp = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "GIDAD", "temp");
+            var carpetaTemp = Path.Combine(BaseDbDir, "temp");
+                if (!Directory.Exists(carpetaTemp)) return;
 
             if (!Directory.Exists(carpetaTemp)) return;
 
@@ -410,7 +431,7 @@ namespace WPF_Test
 
         private void MenuItem_Estadisticas_Click(object sender, RoutedEventArgs e)
         {
-            var ventana = new EstadisticasWindow(OrdenesTrabajoGrid.Rows)
+            var ventana = new EstadisticasWindow(_db, OrdenesTrabajoGrid.Rows)
             {
                 Owner = this
             };

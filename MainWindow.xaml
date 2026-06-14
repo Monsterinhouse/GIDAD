@@ -119,6 +119,7 @@
                     <Label Content="TOTAL DIA" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding Dia_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
                     </Label>
@@ -139,6 +140,7 @@
                     <Label Content="CAJA" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding Caja_DiaAnterior, StringFormat='CAJA DIA ANTERIOR: ${0:N2}'}"/>
                     </Label>
@@ -166,6 +168,7 @@
                     <Label Content="TOTAL: ORDENES DE TRABAJO" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding OT_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
                     </Label>
@@ -186,6 +189,7 @@
                     <Label Content="TOTAL: VENTAS DE MOSTRADOR" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding VM_Efectivo,      StringFormat='TOTAL EFECTIVO: ${0:N2}'}"/>
                     </Label>
@@ -206,6 +210,7 @@
                     <Label Content="TOTAL: PROVEEDORES" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding PR_Efectivo,      StringFormat='TOTAL EFECTIVO: $-{0:N2}'}"/>
                     </Label>
@@ -220,6 +225,7 @@
                     <Label Content="TOTAL: VARIOS" FontSize="16" FontWeight="Bold"/>
                 </GroupBox.Header>
                 <StackPanel>
+                    <TextBlock.FontSize>16</TextBlock.FontSize>
                     <Label>
                         <TextBlock Text="{Binding VA_Efectivo,      StringFormat='TOTAL EFECTIVO: $-{0:N2}'}"/>
                     </Label>

@@ -15,6 +15,16 @@ namespace WPF_Test.Services
             _connectionString = $"Data Source={dbPath}";
         }
 
+        // METODOS DE CONSULTA
+        public class TotalDiaDto
+        {
+            public DateTime Fecha { get; set; }
+            public decimal Efectivo { get; set; }
+            public decimal Seña { get; set; }
+            public decimal Tarjeta { get; set; }
+            public decimal Transferencia { get; set; }
+        }
+
         private SqliteConnection GetConnection() => new(_connectionString);
 
         private static object Dec(string v) =>
@@ -304,6 +314,69 @@ namespace WPF_Test.Services
 
             var result = await cmd.ExecuteScalarAsync();
             return (result == null || result == DBNull.Value) ? 0 : Convert.ToDecimal(result);
+        }
+
+        // ── Conteo de servicios desde una fecha (Órdenes de Trabajo) ──
+        public async Task<Dictionary<string, int>> ObtenerConteoServiciosDesdeAsync(DateTime desde)
+        {
+            await using var conn = GetConnection();
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+        SELECT o.servicio, COUNT(*) as cantidad
+        FROM ordenes_trabajo o
+        JOIN sesiones s ON s.id = o.sesion_id
+        WHERE s.fecha >= @desde
+          AND o.servicio IS NOT NULL AND o.servicio <> ''
+        GROUP BY o.servicio
+        ORDER BY cantidad DESC";
+            cmd.Parameters.AddWithValue("@desde", desde.ToString("yyyy-MM-dd"));
+
+            var result = new Dictionary<string, int>();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                result[reader.GetString(0)] = Convert.ToInt32(reader.GetValue(1));
+
+            return result;
+        }
+
+        // ── Totales diarios desde una fecha (último registro de cada día) ──
+        public async Task<List<TotalDiaDto>> ObtenerTotalesDiariosDesdeAsync(DateTime desde)
+        {
+            await using var conn = GetConnection();
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+            SELECT s.fecha, t.total_efectivo, t.total_seña, t.total_tarjeta, t.total_transferencia
+            FROM total_dia t
+            JOIN sesiones s ON s.id = t.sesion_id
+            WHERE t.id IN (
+            SELECT MAX(t2.id)
+            FROM total_dia t2
+            JOIN sesiones s2 ON s2.id = t2.sesion_id
+            WHERE s2.fecha >= @desde
+            GROUP BY s2.fecha
+            )
+            ORDER BY s.fecha";
+            cmd.Parameters.AddWithValue("@desde", desde.ToString("yyyy-MM-dd"));
+
+            var result = new List<TotalDiaDto>();
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add(new TotalDiaDto
+                {
+                    Fecha = DateTime.Parse(reader.GetString(0)),
+                    Efectivo = Convert.ToDecimal(reader.GetValue(1)),
+                    Seña = Convert.ToDecimal(reader.GetValue(2)),
+                    Tarjeta = Convert.ToDecimal(reader.GetValue(3)),
+                    Transferencia = Convert.ToDecimal(reader.GetValue(4))
+                });
+            }
+
+            return result;
         }
     }
 }

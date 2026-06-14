@@ -79,12 +79,17 @@ namespace WPF_Test.Services
 
     public static class SnapshotService
     {
+        // Este campo debe estar DENTRO de la clase SnapshotService
         private static readonly JsonSerializerOptions _opts = new() { WriteIndented = true };
 
         public static async Task GuardarAsync(AppSnapshot snap, string ruta)
         {
             if (string.IsNullOrWhiteSpace(ruta))
-                throw new ArgumentException("La ruta de destino del snapshot está vacía o nula.");
+            {
+                var carpeta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Database", "temp");
+                Directory.CreateDirectory(carpeta);
+                ruta = Path.Combine(carpeta, $"snapshot_emergencia_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+            }
 
             snap.Timestamp = DateTime.Now;
 

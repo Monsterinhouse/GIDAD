@@ -10,13 +10,27 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="Cantidad de servicios realizados (Órdenes de Trabajo)"
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Hoy"            Click="BtnHoy_Click"    Padding="10,5" Margin="0,0,8,0"/>
+            <Button Content="Últimos 7 días" Click="Btn7Dias_Click"  Padding="10,5" Margin="0,0,8,0"/>
+            <Button Content="Último mes"     Click="Btn30Dias_Click" Padding="10,5"/>
+        </StackPanel>
+
+        <TextBlock x:Name="TxtTitulo" Grid.Row="1"
+                   Text="Servicios realizados — Hoy"
                    FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
 
-        <sp:WpfPlot x:Name="PlotServicios" Grid.Row="1"/>
+        <TabControl Grid.Row="2">
+            <TabItem Header="Servicios">
+                <sp:WpfPlot x:Name="PlotServicios"/>
+            </TabItem>
+            <TabItem Header="Totales (Efectivo / Seña / Tarjeta / Transferencia)">
+                <sp:WpfPlot x:Name="PlotTotales"/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
